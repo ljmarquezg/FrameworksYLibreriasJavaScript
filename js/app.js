@@ -1,66 +1,71 @@
-//Definir variables globales
-    var reiniciar = false; //Iniciar el tablero
+/*Variables de inicializacion*/
     var gameOver = false; //Verificar que el juego ha terminado
-    var dragStatus = false; //No permitir realizar movimientos
-    var columnaActual = "";
-    var col = "";
     var numColumnas = 7; //Definir numero de columnas del tablero
     var numFila = 7; //Definir numero de filas del tablero
     var numDulces = 4 //Definir cantidad de dulces
-    var gridFila = [];
-    var gridCol =[]
-    var mins = 2;  //Set the number of minutes you need
-    var secs = mins * 60; //Convertir los minutos a segundos
-    var currentSeconds = 0; //Definir segundos iniciales del juego
-    var currentMinutes = 0; //Definir minutos iniciales del juego
-    var interval = 1000; //Intervalo de tiempo (1s) para repetir la funcion del cronometro en cuenta regresiva
+    var movimiento = 0; //Contador de movimientos
+    var puntuacion = 0;
+
+    /*Variables de desplazamiento .draggable() y .dropable*/
     var desplazamientoHorizontal = 117; //Cantidad de pixeles definidos para realizar el movimiento Vertical
     var desplazamientoVertical = 96; //Cantidad de pixeles definidos para realizar el movimiento Vertical
     var desplazamiento= ""; //Direccion del desplazamiento
     var posTop = 0;  //Posiciones superior inicial del elemento
     var posLeft = 0; //Posiciones lateral inicial del elemento
-    var elementoActual = ""
-    var elementoSustituir = ""
+    var elementoOrigen = "" //Elemento de Origen
+    var elementoDestino = "" //Elemento Destino
+    var tiempoRetraso = 750 //Tiempo de retraso para la ejecución de funciones
+    
+     /*Variables de cronometro*/
+    var mins =0.05;  //Especificar el tiempo de duración del juego
+    var secs = mins * 60; //Convertir los minutos a segundos
+    var currentSeconds = 0; //Definir segundos iniciales del juego
+    var currentMinutes = 0; //Definir minutos iniciales del juego
+    var interval = 1000; //Intervalo de tiempo (1s) para repetir la funcion del cronometro en cuenta regresiva
+
+    /*Variables generales*/
+    var i=0
+    var gridFila = [];
+    var gridCol =[]
+
+    /*borrar variables
+    var columnaActual = "";
+    var col = "";
+    
+    */
 
 $(function(){
 
-  //Iniciar funcion de cambio de color. Repetirla cada 1.5segundos
-  deshabilitarMovimientos() //No permitir realizar movimientos
   setInterval(titleColor, 1500); //Iniciar funcion cambio de color de titulo y repetirlacada 1.5 segundos
   iniciarTablero(); //Generar nueva partida
 
   $('.btn-reinicio').on('click',function(){
-    if($(this).html() == "Iniciar" && gameOver == false){
-      dragStatus = false;
-      alert(dragStatus)
+    if($(this).html() == "Iniciar"){ //Iniciar una nueva partida.
       iniciarCronometro(interval); 
-      $(this).html("Reiniciar");
-      reiniciar = true
-      habilitarMovimientos() 
-    }else if( $(this).html() == "Reiniciar" && gameOver == false){
-      //$(this).html("Iniciar");
-      mins = 2;
-      secs = mins * 60; 
-      currentSeconds = 0;
-      currentMinutes = 0;
-      reiniciar = false;
-      dragStatus = false;
-      reiniciarJuego()
+      $(this).html("Reiniciar"); //Cambiar el texto del botón a "Reiniciar"
+      habilitarMovimientos() //Ejecutar funcion habilitarMovimientos
+    }else if($(this).html() == "Reiniciar"){ //permite generar una partida antes de que el tiempo haya terminado.
+      /*Reiniciar Tiempo*/
+        reiniciarJuego()
+    }
+
+    if(gameOver == true){
+        location.reload()
     }
   })
 
   /*Definir las propiedades iniciales de arrastre de elementos*/
 $( ".elemento" ).draggable({ //Permitir arrastrar elementos del DOM que contengan la clase "elemento"
+    disabled:true,
     zIndex: "100", //Colocar el elemento seleccionado por encima de los demas
     drag: function(e){
-      elementoActual = $(this);
-      console.log(dragStatus);
-      //console.log(elementoActual);
+      elementoOrigen = $(this); //Guardar en una variable el elemento actual.
+      //console.log(elementoOrigen);
       /*columnaActual = $(this).parent()[0].getAttribute("class");
       poscolumnaActual = $(this).parent()[0].getAttribute("class").substr(4,4); //Seleccionar el elemento padre y seleccionar la columna a la cual pertenece el elemento
       columnaAnterior = (Number(poscolumnaActual) -1)
       columnaSiguiente = (Number(poscolumnaActual) + 1)*/
-       elementoActual.addClass("moved-1");
+      elementoOrigen.addClass("moved-1"); //Agregar clase moved-1 para identificar el elemento
     },
     revert : function (){
       if (!validarMovimiento(posTop, posLeft)){ //Devolver el elemento a la posicion inicial si el movimiento es Invalido
@@ -72,19 +77,18 @@ $( ".elemento" ).draggable({ //Permitir arrastrar elementos del DOM que contenga
     containment: ".panel-tablero" //Limitar el area de movimiento solo al tablero
   }).droppable({
     drop: function( event, ui ) {
-      posTop = elementoActual.css("top") //Obtener la posicion vertical en la que se suelta el elemento
-      posLeft = elementoActual.css("left") //Obtener la posicion horizontal en la que se suelta el elemento
-      elementoActual.css({zIndex: ""}) //Reiniciar la propiedad de profundidad del elemento
-      elementoSustituir = $(this)
-      elementoSustituir.addClass("moved-2")
-      console.log("Actual: "+elementoActual + " Sustituir:" + elementoSustituir)
-      validarMovimiento(posTop, posLeft, elementoActual,elementoSustituir) //Validar el movimiento
-      //console.log(elementoActual);
-      //console.log($(this));
-       //console.log('PosX0:' + posX0 + ' posX1: '+posX1+ ' posY0:' +posY0+ ' posY1:'+posY1);
-    }, accept: ".elemento"  // permitir solo soltar el elemento en la columna anterior, actual o siguiente del elemento actual
+      posTop = elementoOrigen.css("top") //Obtener la posicion vertical en la que se suelta el elemento
+      posLeft = elementoOrigen.css("left") //Obtener la posicion horizontal en la que se suelta el elemento
+      elementoOrigen.css({zIndex: ""}) //Reiniciar la propiedad de profundidad del elemento
+      elementoDestino = $(this) //Guardar en una variable el elemento a sustituir.
+      elementoDestino.addClass("moved-2") //Agregar clase moved-2 para identificar el elemento
+      deshabilitarMovimientos() //Deshabilitar movimientos mientras se realiza el desplazamiento
+      setTimeout(habilitarMovimientos, tiempoRetraso) //Rehabilitar el movimiento al finalizar el desplazamiento
+    },
+    accept: ".elemento"  // permitir solo soltar el elemento en la columna anterior, actual o siguiente del elemento actual
   });
-});
+
+   //Iniciar funcion de cambio de color. Repetirla cada 1.5segundos
 
 function titleColor(){
   $('.main-titulo').toggleClass('main-titulo-inverse')
@@ -92,6 +96,7 @@ function titleColor(){
 
 function deshabilitarMovimientos(){
   $(".elemento").draggable({disabled: true})
+  console.log('nomover')
 }
 
 function habilitarMovimientos(){
@@ -104,25 +109,23 @@ function reiniciarJuego(){
   secs = mins * 60; 
   currentSeconds = 0;
   currentMinutes = 0;
-  reiniciar = false;
+  movimiento = 0
+  $('#movimientos-text').html(movimiento)
+  puntuacion = 0
+  $('#movimientos-text').html(puntuacion)
+
+  $('.title-over').removeClass('over-container').hide()
+  $('.panel-score').removeClass('over-container');
+  $('.time').show();
   vaciarTablero();
   iniciarTablero(); //Generar nuevo juego
 }
 
- function iniciarCronometro(interval) {
-        currentMinutes = Math.floor(secs / 60);
-        currentSeconds = secs % 60;
-        if(currentSeconds <= 9) currentSeconds = "0" + currentSeconds;
-        secs--;
-          $('#timer').html("0"+currentMinutes + ":" + currentSeconds)
-          //console.log("tres");
-        /*document.getElementById("timerText").innerHTML = currentMinutes + ":" + currentSeconds; //Set the element id you need the time put into.*/
-        if(secs !== -1) setTimeout('iniciarCronometro('+interval+')',interval);
-}
-
+ 
 
 /*Iniciar tablero*/
 function iniciarTablero(){
+  $('.panel-tablero').show("slow","swing")
   var id=0
   for(columna=0 ; columna < (numColumnas); columna++){ //Recorrer las columnas
     for(fila=0; fila < numFila ; fila++){ //Recorrer las filas
@@ -142,13 +145,13 @@ function vaciarTablero(){ //Eliminar todos los dulces actuales
   
 }
 
-function validarMovimiento(top,left,elementoActual, elementoSustituir){
+function validarMovimiento(top,left){
   desplazamiento = "";
   var horizontal = false;
   var vertical = false;
 
-  if((left == "117px" || left == "-117px") && (top == "0px")) {//Validar movimientos laterales Limitando movimiento diagonal
-    if(left == "117px"){
+  if((left == desplazamientoHorizontal+"px" || left == "-"+desplazamientoHorizontal+"px") && (top == "0px")) {//Validar movimientos laterales Limitando movimiento diagonal
+    if(left == desplazamientoHorizontal+"px"){
       desplazamiento = "Derecha"
     }else{
       desplazamiento = "Izquierda"
@@ -158,8 +161,8 @@ function validarMovimiento(top,left,elementoActual, elementoSustituir){
     console.log("Movimiento Horizontal Valido. Desplanzando hacia la " +desplazamiento)   
 
 
-  }else  if((top == "96px" || top == "-96px")  && (left == "0px")){//Validar Movimientos Verticales Limitando movimiento diagonal
-    if(top == "-96px"){
+  }else  if((top == desplazamientoVertical+"px" || top == "-"+(desplazamientoVertical)+"px")  && (left == "0px")){//Validar Movimientos Verticales Limitando movimiento diagonal
+    if(top == "-"+desplazamientoVertical+"px"){
       desplazamiento = "Arriba"
     }else{
       desplazamiento = "Abajo"
@@ -175,18 +178,21 @@ function validarMovimiento(top,left,elementoActual, elementoSustituir){
   }
 
   if (vertical == true || horizontal == true){
-    desplazarElemento(elementoActual, elementoSustituir, desplazamiento)
+    desplazarElemento(desplazamiento)
+    movimiento = movimiento + 1
+    $('#movimientos-text').html(movimiento)
     return true
   }else {
     return false
   }
 }
+
+
 function regenerarDulces(){
   /*Verificar Primera Columna*/
   for(columna=0 ; columna < (numColumnas); columna++){ //
     var recorrerColumna = columna+1
     var espacioOcupado = ($('.col-'+(recorrerColumna)+ ' img').length) //Verificar cuantos espacios se encuentran ocupados en la columna+1
-    //console.log("Espacio ocupado: "+ espacioOcupado);
     for( var fila=espacioOcupado; fila < numFila ; fila++){ //
       if(!col[fila]){ //Vedificar que haya un espacio vacio
         var imagen = imagenAleatoria() //Generar dulce aleatorio
@@ -198,10 +204,9 @@ function regenerarDulces(){
 }
 
 function verificarSecuencia(){
-  var elemento1 = $('.col-1 img')[0].getAttribute('src')
+  /*var elemento1 = $('.col-1 img')[0].getAttribute('src')
   //var anterior = elemento1.previousSibling().getAttribute('src')
-  var siguiente = elemento1.nextSibling().getAttribute('src')
-  //console.log(elemento1);
+  var siguiente = elemento1.nextSibling().getAttribute('src')*/
 }
 
 function imagenAleatoria(){
@@ -210,8 +215,57 @@ function imagenAleatoria(){
 }
 
 
-function desplazarElemento(elementoActual, elementoSustituir, desplazamiento){
-  console.log("elementoActual: "+elementoActual+ " " +"elementoSustituir: "+ elementoSustituir + "Desplazamiento: "+desplazamiento)
+function desplazarElemento(desplazamiento){
+  var idActual;
+  var idSustituir;
+  
+  
+  idActual = $(elementoOrigen).attr('id')
+  imgActual = $(elementoOrigen).attr('src')
+
+  idSustituir = $(elementoDestino).attr('id')
+  imgSustituir = $(elementoDestino).attr('src')
+
+  
+
+  if(desplazamiento == "Derecha"){ //Mover Derecha
+      $(elementoDestino).animate({
+        left: "-="+desplazamientoHorizontal
+      }),tiempoRetraso
+    }
+    if(desplazamiento == "Izquierda"){ //Mover Izquierda
+      $(elementoDestino).animate({
+        left: "+="+desplazamientoHorizontal
+      }),tiempoRetraso
+    }
+
+    if(desplazamiento == "Arriba"){ //Mover Arriba
+      $(elementoDestino).animate({
+        top: "+="+desplazamientoVertical
+      }),tiempoRetraso
+    }
+    if(desplazamiento == "Abajo" ){ //Mover Abajo
+      $(elementoDestino).animate({
+        top: "-="+desplazamientoVertical
+      }),tiempoRetraso
+    }
+
+    setTimeout(sustituirElemento,tiempoRetraso) //
+
+    function sustituirElemento(){
+      console.log(idActual)
+      console.log(idSustituir)
+      $(elementoDestino).attr({id:idSustituir, src:imgActual}).css({top:"0", left:"0", right:"0", bottom: "0"}) //Mantener el mimo id del elemento sustituido y asignarle la misma imagen del elemento de origen
+      $(elementoOrigen).attr({id : idActual, src:imgSustituir}).css({top:"0", left:"0", right:"0", bottom: "0"}) //Mantener el mismo id del elemento actual y asignarle la imagen del elemento destino
+      elementoDestino = ""
+      elementoOrigen = ""
+    }
+
+    matchElements()
+
+
+
+  /*console.log("elementoOrigen: "+elementoOrigen+ " " +"elementoDestino: "+ elementoDestino + "Desplazamiento: "+desplazamiento)
   var elmentosDesplazados = new Array()
   var i = 0;
 
@@ -219,69 +273,75 @@ function desplazarElemento(elementoActual, elementoSustituir, desplazamiento){
   value = $('.moved-1').attr('src')
   //elemento1 = $('.moved-1')[0].nextSibling
 
-  //console.log($(elementoActual));
-  //console.log($(elementoSustituir));
+  //console.log($(elementoOrigen));
+  //console.log($(elementoDestino));
 
-  imagenActual = $(elementoActual).attr('src')
-  idActual = $(elementoActual).attr('id')
+  imagenActual = $(elementoOrigen).attr('src')
+  idActual = $(elementoOrigen).attr('id')
 
-  imagenSustituir = $(elementoSustituir).attr('src')
-  idSustituir = $(elementoSustituir).attr('id')
+  imagenSustituir = $(elementoDestino).attr('src')
+  idSustituir = $(elementoDestino).attr('id')
 
   //console.log(imagenSustituir);
   //console.log(idSustituir);
 
   //console.log(imagenActual);
   //console.log(idActual);
-  elementoSustituir.animate({
-    /*left: "-=120"*/
-  }, 750, function(){
+*/  
 
+   /* imagenActual = $('.move-1').attr('src')
+    idActual = $('.move-1').attr('id')
+
+    imagenSustituir = $('.move-2').attr('src')
+    idSustituir = $('.move-2').attr('id')
+
+    console.log(elementoDestino)
     
-    if(desplazamiento == "Derecha"){ //Mover Derecha
-      //console.log("moviendo a la derecha");
-      $(elementoSustituir).animate({
-        left: "-=117"
-      }),750
-    }
-    if(desplazamiento == "Izquierda"){ //Mover Izquierda
-      //console.log("moviendo a la izquierda");
-      $(elementoSustituir).animate({
-        left: "+=117"
-      }),750
-    }
-
-    if(desplazamiento == "Arriba"){ //Mover Arriba
-      //console.log("moviendo a Arriba");
-      $(elementoSustituir).animate({
-        top: "+=96"
-      }),750
-    }
-    if(desplazamiento == "Abajo" ){ //Mover Abajo
-      //console.log("moviendo a Abajo");
-      $(elementoSustituir).animate({
-        top: "-=96"
-      }),750
-    }
-
+*/
+   
+/*
     //console.log(direccion);
-    //$(elementoSustituir).detach()
-    //$(elementoSustituir).clone().insertBefore("#"+idSustituir)
-    setInterval(sustituirElemento, 750)
-    function sustituirElemento(){
-      //$(elementoSustituir).attr({id:idActual, src : imagenActual}).css({top:"0", left:"0", right:"0", bottom: "0"})
-      $(elementoActual).attr({id : idSustituir, src : imagenSustituir}).css({top:"0", left:"0", right:"0", bottom: "0"})
-      elementoSustituir = ""
-      elementoActual = ""
-    }
+    //$(elementoDestino).detach()
+    //$(elementoDestino).clone().insertBefore("#"+idSustituir)
+    
+   
+      /*
+    
 
-    columnaActual = $(this).parent()[0].getAttribute("class");
+    /*columnaActual = $(this).parent()[0].getAttribute("class");
     poscolumnaActual = $(this).parent()[0].getAttribute("class").substr(4,4); //Seleccionar el elemento padre y seleccionar la columna a la cual pertenece el elemento
     columnaAnterior = (poscolumnaActual -1)
     columnaSiguiente = (1+Number(poscolumnaActual))
     console.log('col-'+columnaAnterior+ ' col-'+poscolumnaActual + 'col-'+columnaSiguiente);
-    //$(elementoSustituir).insertBefore("#"+idActual)
+    //$(elementoDestino).insertBefore("#"+idActual)
     console.log("E");
   }
-)
+)*/
+}
+
+function matchElements(){
+  var matchElement = $('.moved-1')
+  var prev = matchElement[0].previousSibling
+  var next = matchElement[0].nextSibling
+
+  console.log(matchElement)
+  console.log(next)
+  console.log(previous)
+}
+
+});
+function iniciarCronometro(interval) {
+        currentMinutes = Math.floor(secs / 60);
+        currentSeconds = secs % 60;
+        if(currentSeconds <= 9) currentSeconds = "0" + currentSeconds;
+        secs--;
+          $('#timer').html("0"+currentMinutes + ":" + currentSeconds)
+        if(secs !== -1){
+          setTimeout('iniciarCronometro('+interval+')',interval);
+        }else{
+         /*gameOver = true;
+          $('.panel-tablero, .time').hide('slow',"swing")
+          $('.panel-tablero').before('<h1 class="titulo-over over-container">Juego Terminado</h1>')
+          $('.panel-score').addClass('over-container')*/
+        }
 }

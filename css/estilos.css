@@ -108,3 +108,8 @@ div[class^='col']{
 .main-titulo-inverse{
   color: white;
 }
+
+.over-container{
+  width: 100%;
+  text-align: center;
+}
