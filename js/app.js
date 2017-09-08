@@ -24,10 +24,14 @@
     var interval = 1000; //Intervalo de tiempo (1s) para repetir la funcion del cronometro en cuenta regresiva
 
     /*Variables generales*/
-    var i=0
+    var i=0;
     var gridFila = [];
-    var gridCol =[]
-
+    var gridCol =[];
+    var matchDulce = "";
+    var prevDulceV = "";
+    var nextDulce = "";
+    var totalMatch = [];
+    var existe = ""
     /*borrar variables
     var columnaActual = "";
     var col = "";
@@ -253,15 +257,17 @@ function desplazarElemento(desplazamiento){
     setTimeout(sustituirElemento,tiempoRetraso) //
 
     function sustituirElemento(){
-      console.log(idActual)
-      console.log(idSustituir)
       $(elementoDestino).attr({id:idSustituir, src:imgActual}).css({top:"0", left:"0", right:"0", bottom: "0"}) //Mantener el mimo id del elemento sustituido y asignarle la misma imagen del elemento de origen
       $(elementoOrigen).attr({id : idActual, src:imgSustituir}).css({top:"0", left:"0", right:"0", bottom: "0"}) //Mantener el mismo id del elemento actual y asignarle la imagen del elemento destino
+      console.log(idActual)
+      console.log(idSustituir)
+      matchDulces()
+      $(elementoOrigen).removeClass('moved-1')
+      $(elementoDestino).removeClass('moved-2')
+
       elementoDestino = ""
       elementoOrigen = ""
     }
-
-    matchElements()
 
 
 
@@ -319,17 +325,110 @@ function desplazarElemento(desplazamiento){
 )*/
 }
 
-function matchElements(){
-  var matchElement = $('.moved-1')
-  var prev = matchElement[0].previousSibling
-  var next = matchElement[0].nextSibling
+function matchDulces(){
+  i=0
+  var existePrev;
+  var existeNext;
+  console.log(elementoDestino)
+  /*for (var i=1; i < 3; i++){*/
+  matchDulce = $(elementoDestino)
+  prevDulceV = $(matchDulce)[0].previousSibling
+  nextDulce = $(matchDulce)[0].nextSibling
+  totalMatch.push(Number($(matchDulce).attr('id')))
+  //console.log(matchDulce)
+  //console.log(nextDulce)
+  //console.log(previousDulce)
+  while (matchPrevDulcesVerticales()){
+    prevDulceId = matchPrevDulcesVerticales()
+    console.log("Retorna: "+  matchPrevDulcesVerticales())
+    for (var i=0; i < totalMatch.length ; i++){
+      if (totalMatch[i] == prevDulceId){
+        existePrev = true
+      }
+    }
+    if (existePrev != true) {
+      totalMatch.push(Number(prevDulceId))
+    }
+    prevDulceV = $(prevDulceV)[0].previousSibling
+    //console.log("Nuevo Previous: "+ $(prevDulceV).attr('id'))
+    console.log($(prevDulceV))
+    //matchDulcesVerticales()
+    i++
+    console.log(i)
+  }
 
-  console.log(matchElement)
-  console.log(next)
-  console.log(previous)
+  while (matchPrevDulcesVerticales()){
+    prevDulceId = matchPrevDulcesVerticales()
+    console.log("Retorna: "+  matchPrevDulcesVerticales())
+    for (var i=0; i < totalMatch.length ; i++){
+      if (totalMatch[i] == prevDulceId){
+        existePrev = true
+      }
+    }
+    if (existePrev != true) {
+      totalMatch.push(Number(prevDulceId))
+    }
+    prevDulceV = $(prevDulceV)[0].previousSibling
+    //console.log("Nuevo Previous: "+ $(prevDulceV).attr('id'))
+    console.log($(prevDulceV))
+    //matchDulcesVerticales()
+    i++
+    console.log(i)
+  }
+
+  if(totalMatch.length < 3){
+    console.log("Reiniciar totalMatch")
+    totalMatch = []
+    matchDulce = ""
+  }else{
+    for(var i=0; i < totalMatch.length; i++){
+      $('#'+totalMatch[i]).css({opacity: "0.5"}).hide(750,"swing", "blind")
+      puntuacion = puntuacion + (totalMatch.length * 10)
+      $('#score-text').html(puntuacion) 
+    }
+    totalMatch = []
+    matchDulce = ""
+  }
 }
 
+function matchPrevDulcesVerticales(){
+  console.log("Entrando:"+ $(prevDulceV).attr('id'))
+  if ($(matchDulce).attr('src') == $(prevDulceV).attr('src')){
+    var prevDulceId = $(prevDulceV).attr('id')
+      return prevDulceId 
+    }
+  else{
+    //console.log("No Match ID: "+ $(matchDulce).attr('id') + "img1: " + $(matchDulce).attr('src') + " " + $(prevDulceV).attr('id' ) + "img1: " + $(prevDulceV).attr('src'))
+    return false   
+  }
+
+  /*if ($(matchDulce).attr('src') == $(nextDulce).attr('src')){
+     var nextDulceId = $(nextDulce).attr('id')
+     console.log("match dulces con ID: "+ $(matchDulce).attr('id') + " img1: " + $(matchDulce).attr('src') + " " + $(nextDulce).attr('id') + $(nextDulce).attr('src'))
+    for (var j=0; j < totalMatch.length ; j++){
+      if (totalMatch[j] != nextDulceId){
+        totalMatch.push($(nextDulce).attr('id'))
+      }
+    }
+  }else{
+     console.log("No Match ID: "+ $(matchDulce).attr('id') + "img1: " + $(matchDulce).attr('src') + " " + $(nextDulce).attr('id' ) + "img1: " + $(nextDulce).attr('src'))
+  }*/
+
+}
+
+function matchNextDulcesVerticales(){
+  if ($(matchDulce).attr('src') == $(nextDulce).attr('src')){
+    var nextDulceId = $(nextDulce).attr('id')
+      return nextDulceId 
+ }else{
+    return false   
+  }
+}
+
+
 });
+
+
 function iniciarCronometro(interval) {
         currentMinutes = Math.floor(secs / 60);
         currentSeconds = secs % 60;
