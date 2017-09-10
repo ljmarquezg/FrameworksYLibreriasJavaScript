@@ -28,10 +28,11 @@
     var gridFila = [];
     var gridCol =[];
     var matchDulce = "";
-    var prevDulceV = "";
+    var prevDulce = "";
     var nextDulce = "";
     var totalMatch = [];
     var existe = ""
+    var matchLinea = []
     /*borrar variables
     var columnaActual = "";
     var col = "";
@@ -45,7 +46,8 @@ $(function(){
 
   $('.btn-reinicio').on('click',function(){
     if($(this).html() == "Iniciar"){ //Iniciar una nueva partida.
-      iniciarCronometro(interval); 
+      iniciarCronometro(interval);
+      matchElements();
       $(this).html("Reiniciar"); //Cambiar el texto del botón a "Reiniciar"
       habilitarMovimientos() //Ejecutar funcion habilitarMovimientos
     }else if($(this).html() == "Reiniciar"){ //permite generar una partida antes de que el tiempo haya terminado.
@@ -214,7 +216,8 @@ function verificarSecuencia(){
 }
 
 function imagenAleatoria(){
-  img = Math.floor(Math.random() * numDulces)+1 //Obtener ina imagen aleatoria
+  img = Math.floor(Math.random() * 1)+1 //Obtener ina imagen aleatoria
+  /*img = Math.floor(Math.random() * numDulces)+1 //Obtener ina imagen aleatoria*/
   return img;
 }
 
@@ -261,13 +264,17 @@ function desplazarElemento(desplazamiento){
       $(elementoOrigen).attr({id : idActual, src:imgSustituir}).css({top:"0", left:"0", right:"0", bottom: "0"}) //Mantener el mismo id del elemento actual y asignarle la imagen del elemento destino
       console.log(idActual)
       console.log(idSustituir)
-      matchDulces()
+     /******************************************************************/
+     /*-* matchDulces()*/
+     //recorrerArrayVertical()
       $(elementoOrigen).removeClass('moved-1')
       $(elementoDestino).removeClass('moved-2')
 
       elementoDestino = ""
       elementoOrigen = ""
     }
+
+    setTimeout(matchElements,tiempoRetraso)
 
 
 
@@ -325,14 +332,125 @@ function desplazarElemento(desplazamiento){
 )*/
 }
 
+
+
+function matchElements(){
+  var matchVertical = [];
+  var matchHorizontal = [];
+  matchLinea = [];
+  $('.panel-tablero').find('.matched').removeClass('matched')
+  for (var i = 1; i < numFila+1; i++ ){
+    for (var j = 0; j < (numColumnas-1); j++){
+      console.log(numColumnas-1)
+      if ($(".col-"+i).children()[j].getAttribute('src') == $(".col-"+i).children()[(j+1)].getAttribute('src')){
+        if (matchVertical.length == 0){
+            matchVertical.push(($(".col-"+i).children()[j]))
+            //$('#'+Number($(".col-"+i).children()[j].getAttribute('id'))).css({border:"solid red 1px"})
+            //$('#'+Number($(".col-"+i).children()[j].getAttribute('id'))).css({background: "rgba(255,255,0,0.3)"})
+            //console.log('llenando primer arraay con: '+ $(".col-"+i).children()[j].getAttribute('id'))
+        }
+          matchVertical.push(($(".col-"+i).children()[(j+1)]))
+
+         //$('#'+Number($(".col-"+i).children()[j+1].getAttribute('id'))).css({background: "rgba(255,255,0,0.3)"})
+         //console.log(matchVertical)
+          //console.log('Id matching' +$(".col-"+i).children()[j+1].getAttribute('id'))
+
+      }else{
+        console.log("Vertical Linea:"+matchLinea.length)
+        if (matchVertical.length >= 3){
+          for (var x = 0; x < matchVertical.length; x++){
+                matchLinea.push(matchVertical[x])
+                console.log(matchLinea)
+        }
+
+
+          /*if (matchLinea.length == 0){
+              //matchLinea.push(matchVertical)
+              for (var x = 0; x < matchVertical.length; x++){
+                matchLinea.push(matchVertical[x])
+              }
+              //console.log(matchLinea.length)
+              console.log("agregando linea")
+          }else{
+
+            for (var k = 0; k< matchVertical.length ; k++){
+              matchLinea.push(matchVertical[x])
+            }
+            for (var k = 0; k < matchLinea.length ; k++){
+                console.log(matchLinea.length)
+              //console.log("entrando a verificar:" +k + " matchVertical " +matchLinea[k])
+              for (var x = 0; x < matchVertical; x++){
+                $('#'+matchVertical[x]).css({opacity:"0.5"})
+                console.log("En linea:"+ matchVertical[x])
+                if (matchLinea[k] == matchVertical[x]){
+                  existe = true;
+                  console.log(existe)
+                }else{
+                  existe = false;
+                  console.log(existe)
+                }
+                if (existe != true){
+                  console.log("agregando MatchVertical: " +matchVertical[x])
+
+                  $('#'+matchVertical[x]).css({opacity:"0.5"})
+
+                  matchLinea.push(matchVertical[x])
+                }
+              }
+            }
+          }*/
+        }
+        /*for (var x = 0; x < matchLinea.length; x++){
+                $("#"+matchLinea[x]).hide()
+        }*/
+        matchVertical = [] 
+      }
+    }
+    for (var x = 0; x < matchLinea.length; x++){ $(matchLinea[x]).addClass('matched') }
+     
+  }
+}
+
+
+
+function recorrerArrayVertical(){
+    /*for(var i=0; i<numFila;i++){*/
+    for(var j=0; j<(numFila-1); j++){
+      //console.log($('.col-1').children()[j].getAttribute('id'))
+      var actual = $('.col-1').children()[j]
+      var siguiente = $('.col-1').children()[(j+1)]
+
+      totalMatch.push(actual.getAttribute('id'))
+      
+      if(actual.getAttribute('src') == siguiente.getAttribute('src')){
+        console.log("match:" + actual.getAttribute('src') + "-" + siguiente.getAttribute('src'))
+        for (var k=0; k<totalMatch.length;k++){
+           if (totalMatch[k] == siguiente.getAttribute('id')){
+              existe = true
+           }else{
+              existe = false
+           }
+
+           if (existe == false){
+            totalMatch.push(actual.getAttribute('id'))
+            totalMatch.push(siguiente.getAttribute('id'))
+           }
+
+        }
+      }
+    }
+  /*}*/
+}
+
 function matchDulces(){
+  recorrerArrayVertical()
   i=0
   var existePrev;
   var existeNext;
   console.log(elementoDestino)
   /*for (var i=1; i < 3; i++){*/
   matchDulce = $(elementoDestino)
-  prevDulceV = $(matchDulce)[0].previousSibling
+  prevDulce = $(matchDulce)[0].previousSibling
   nextDulce = $(matchDulce)[0].nextSibling
   totalMatch.push(Number($(matchDulce).attr('id')))
   //console.log(matchDulce)
@@ -349,29 +467,27 @@ function matchDulces(){
     if (existePrev != true) {
       totalMatch.push(Number(prevDulceId))
     }
-    prevDulceV = $(prevDulceV)[0].previousSibling
-    //console.log("Nuevo Previous: "+ $(prevDulceV).attr('id'))
-    console.log($(prevDulceV))
+    prevDulce = $(prevDulce)[0].previousSibling
+    //console.log("Nuevo Previous: "+ $(prevDulce).attr('id'))
+    console.log($(prevDulce))
     //matchDulcesVerticales()
     i++
     console.log(i)
   }
 
-  while (matchPrevDulcesVerticales()){
-    prevDulceId = matchPrevDulcesVerticales()
-    console.log("Retorna: "+  matchPrevDulcesVerticales())
+  while (matchNextDulcesVerticales()){
+    nextDulceId = matchNextDulcesVerticales()
+    console.log("Retorna: "+  matchNextDulcesVerticales())
     for (var i=0; i < totalMatch.length ; i++){
-      if (totalMatch[i] == prevDulceId){
-        existePrev = true
+      if (totalMatch[i] == nextDulceId){
+              existeNext = true
       }
     }
-    if (existePrev != true) {
-      totalMatch.push(Number(prevDulceId))
+    if (existeNext != true){
+      totalMatch.push(Number(nextDulceId))
     }
-    prevDulceV = $(prevDulceV)[0].previousSibling
-    //console.log("Nuevo Previous: "+ $(prevDulceV).attr('id'))
-    console.log($(prevDulceV))
-    //matchDulcesVerticales()
+    nextDulce = $(nextDulce)[0].nextSibling
+    console.log($(prevDulce))
     i++
     console.log(i)
   }
@@ -392,27 +508,15 @@ function matchDulces(){
 }
 
 function matchPrevDulcesVerticales(){
-  console.log("Entrando:"+ $(prevDulceV).attr('id'))
-  if ($(matchDulce).attr('src') == $(prevDulceV).attr('src')){
-    var prevDulceId = $(prevDulceV).attr('id')
+  console.log("Entrando:"+ $(prevDulce).attr('id'))
+  if ($(matchDulce).attr('src') == $(prevDulce).attr('src')){
+    var prevDulceId = $(prevDulce).attr('id')
       return prevDulceId 
     }
   else{
-    //console.log("No Match ID: "+ $(matchDulce).attr('id') + "img1: " + $(matchDulce).attr('src') + " " + $(prevDulceV).attr('id' ) + "img1: " + $(prevDulceV).attr('src'))
     return false   
   }
 
-  /*if ($(matchDulce).attr('src') == $(nextDulce).attr('src')){
-     var nextDulceId = $(nextDulce).attr('id')
-     console.log("match dulces con ID: "+ $(matchDulce).attr('id') + " img1: " + $(matchDulce).attr('src') + " " + $(nextDulce).attr('id') + $(nextDulce).attr('src'))
-    for (var j=0; j < totalMatch.length ; j++){
-      if (totalMatch[j] != nextDulceId){
-        totalMatch.push($(nextDulce).attr('id'))
-      }
-    }
-  }else{
-     console.log("No Match ID: "+ $(matchDulce).attr('id') + "img1: " + $(matchDulce).attr('src') + " " + $(nextDulce).attr('id' ) + "img1: " + $(nextDulce).attr('src'))
-  }*/
 
 }
 
@@ -425,10 +529,7 @@ function matchNextDulcesVerticales(){
   }
 }
 
-
 });
-
-
 function iniciarCronometro(interval) {
         currentMinutes = Math.floor(secs / 60);
         currentSeconds = secs % 60;
