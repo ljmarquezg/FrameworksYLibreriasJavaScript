@@ -6,6 +6,7 @@
   <title>Juego</title>
   <link rel="stylesheet" href="css/jquery-ui.min.css">
   <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="fonts/foundation-icons/foundation-icons.css">
 
 
 </head>
@@ -14,6 +15,8 @@
     <h1 class="main-titulo">Match Game</h1>
 
     <div class="panel-tablero">
+      <h1 id="mensaje" style="display:none"></h1>
+
       <div class="col-1">
           
       </div>
@@ -41,6 +44,7 @@
       <div class="score">
         <h2 class="data-titulo">Puntuación</h2>
         <span class="data-info" id="score-text">0</span>
+        <span class="data-info" id="score-text"><i class="icon fi-comment-minus" title="Habilitar / Deshabilitar mensajes de puntuación"></i></span>
       </div>
       <div class="moves">
         <h2 class="data-titulo">Movimientos</h2>

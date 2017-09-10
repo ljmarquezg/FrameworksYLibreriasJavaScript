@@ -19,7 +19,7 @@ body{
   justify-content: space-between;
 }
 
-.main-titulo{
+.main-titulo, #mensaje{
   font-family: gameFont;
   font-size: 3em;
   color: #DCFF0E;
@@ -112,4 +112,35 @@ div[class^='col']{
 .over-container{
   width: 100%;
   text-align: center;
+}
+
+.matchedEffect {
+  opacity: 0.2;
+}
+
+.generado{
+  background-color: green
+}
+
+#mensaje {
+  position: absolute;
+  z-index: 900;
+  width: calc(117px * 7);
+  top: 50%;
+  text-align: center;
+  text-shadow: 0 0 5px #2a0227;
+  background-color: rgba(48, 4, 51, 0.67);
+  padding: 3%;
+}
+
+.icon {
+  position: relative;
+  width: 100%;
+  float: left;
+  color: #E8CA06;
+  cursor: pointer;
+}
+
+.ui-tooltip{
+  posi
 }
